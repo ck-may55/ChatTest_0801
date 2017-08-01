@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "1010093240282",
+    "firebase_url": "https://yawnchat-919a4.firebaseio.com",
+    "project_id": "yawnchat-919a4",
+    "storage_bucket": "yawnchat-919a4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1010093240282:android:c95cbde5defd33d2",
+        "android_client_info": {
+          "package_name": "com.example.chie.notifitest0429"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1010093240282-54r5q9nqr884m9ob6vb1maokdgrc1dul.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5VBoAoDsc6Aq9VwEQSfPVdM4v4ZlqGTo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

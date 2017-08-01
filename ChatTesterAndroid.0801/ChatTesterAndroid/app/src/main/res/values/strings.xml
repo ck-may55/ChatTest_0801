@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">NotifiTest0429</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="chatpage_url">https://yawnchat-919a4.firebaseapp.com</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- StartPage -->
+    <string name="open_chat_label">サポートチャットを開く</string>
+
+    <!-- ChatPage -->
+    <string name="message_input">メッセージをご入力ください</string>
+    <string name="send_label">送信</string>
+</resources>
