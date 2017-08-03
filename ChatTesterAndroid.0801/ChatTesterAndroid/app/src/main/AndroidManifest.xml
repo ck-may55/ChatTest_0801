@@ -23,7 +23,7 @@
             android:resource="@color/colorAccent" />
 
         <activity android:name=".MainActivity"
-            android:windowSoftInputMode="adjustPan"
+            android:windowSoftInputMode="adjustResize"
             >
 
 

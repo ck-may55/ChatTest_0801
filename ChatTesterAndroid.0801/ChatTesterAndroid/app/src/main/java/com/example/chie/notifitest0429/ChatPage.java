@@ -3,7 +3,10 @@ package com.example.chie.notifitest0429;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Layout;
@@ -24,6 +27,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.AdapterView;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -75,6 +79,9 @@ public class ChatPage extends Fragment {
     private boolean isend = false;
 
     private List<ChatData>messages = new ArrayList<ChatData>();
+
+    //担当者からのメッセージであるかどうか
+    boolean fromRoot = false;
 
     //
     public ChatPage() {
@@ -162,6 +169,7 @@ public class ChatPage extends Fragment {
         setBackButton();
 
         // DELAYミリ秒毎に実行する
+
         final Handler _handler = new Handler();
         _handler.postDelayed(new Runnable() {
             @Override
@@ -205,12 +213,14 @@ public class ChatPage extends Fragment {
                                 ChatData chatMsg = new ChatData();
                                 chatMsg.text = (String)(msg.child("text").getValue());
                                 chatMsg.userID = (String)(msg.child("userID").getValue());
+                                fromRoot = false;
                                 newMessages.add(chatMsg);
                             }
                             else if (suid.equals("susmedroot") && msg.child("toUserid").getValue().equals(userId)) {
                                 ChatData chatMsg = new ChatData();
                                 chatMsg.text = (String)(msg.child("text").getValue());
                                 chatMsg.userID = (String)(msg.child("userID").getValue());
+                                fromRoot = true;
                                 newMessages.add(chatMsg);
                             }
                         }
@@ -226,13 +236,24 @@ public class ChatPage extends Fragment {
                             //Log.d("ChatPage", "update adapter");
                             int diff = newMessages.size() - messages.size();
                             int pos = newMessages.size() - diff;
-                            for (int i = 0; i < diff; i++) {
-                                Log.d("ChatPage", "add adapter " + newMessages.get(pos + i));
-                                adapter.add(newMessages.get(pos + i));
+
+                            //一つでもmessagesが更新されればリストをスクロールする
+                            if(diff>0){
+                                for (int i = 0; i < diff; i++) {
+                                    Log.d("ChatPage", "add adapter " + newMessages.get(pos + i));
+                                    adapter.add(newMessages.get(pos + i));
+                                }
+                                chatView.setAdapter(adapter);
+                                chatView.setSelection(chatView.getCount() - 1);
+                                adapter.notifyDataSetChanged();
+
+                                //担当者からのメッセージであれば通知音を再生（ユーザ端末のデフォルトのもの）
+                                if(fromRoot) {
+                                    Uri defaultRingtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALL);
+                                    Ringtone ringtone = RingtoneManager.getRingtone(getActivity(), defaultRingtoneUri);
+                                    if (ringtone != null) ringtone.play();
+                                }
                             }
-                            chatView.setAdapter(adapter);
-                            chatView.setSelection(chatView.getCount() - 1);
-                            adapter.notifyDataSetChanged();
                         }
                         messages = newMessages;
                     }
@@ -264,10 +285,12 @@ public class ChatPage extends Fragment {
     /**
      * ListViewに送信メッセージを表示
      */
+/*
+    //ListAdapterで対応できているためコメントアウト
     private void addToList(String message){
 
     }
-
+*/
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
