@@ -80,7 +80,7 @@ public class ChatPage extends Fragment {
 
     private List<ChatData>messages = new ArrayList<ChatData>();
 
-    //担当者からのメッセージであるかどうか
+    // 2017/08/03追加　担当者からのメッセージであるかどうかを保持
     boolean fromRoot = false;
 
     //
@@ -213,14 +213,20 @@ public class ChatPage extends Fragment {
                                 ChatData chatMsg = new ChatData();
                                 chatMsg.text = (String)(msg.child("text").getValue());
                                 chatMsg.userID = (String)(msg.child("userID").getValue());
+
+                                //2017/08/03追加
                                 fromRoot = false;
+
                                 newMessages.add(chatMsg);
                             }
                             else if (suid.equals("susmedroot") && msg.child("toUserid").getValue().equals(userId)) {
                                 ChatData chatMsg = new ChatData();
                                 chatMsg.text = (String)(msg.child("text").getValue());
                                 chatMsg.userID = (String)(msg.child("userID").getValue());
+
+                                //2017/08/03追加
                                 fromRoot = true;
+
                                 newMessages.add(chatMsg);
                             }
                         }
@@ -237,8 +243,10 @@ public class ChatPage extends Fragment {
                             int diff = newMessages.size() - messages.size();
                             int pos = newMessages.size() - diff;
 
-                            //一つでもmessagesが更新されればリストをスクロールする
+                            //2017/08/03追加
+                            //ListViewの更新をデータが上書きされた時のみに行う
                             if(diff>0){
+                            //
                                 for (int i = 0; i < diff; i++) {
                                     Log.d("ChatPage", "add adapter " + newMessages.get(pos + i));
                                     adapter.add(newMessages.get(pos + i));
@@ -247,12 +255,14 @@ public class ChatPage extends Fragment {
                                 chatView.setSelection(chatView.getCount() - 1);
                                 adapter.notifyDataSetChanged();
 
+                                //2017/08/03追加　
                                 //担当者からのメッセージであれば通知音を再生（ユーザ端末のデフォルトのもの）
                                 if(fromRoot) {
                                     Uri defaultRingtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALL);
                                     Ringtone ringtone = RingtoneManager.getRingtone(getActivity(), defaultRingtoneUri);
                                     if (ringtone != null) ringtone.play();
                                 }
+                                //
                             }
                         }
                         messages = newMessages;

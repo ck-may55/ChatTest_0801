@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!-- 2017/08/03追加 レイアウトの変更 -->
+<!-- 全体のレイアウトをLinerLayoutからRelativeLayoutに変更-->
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,6 +12,7 @@
     android:background="#f0f0f0"
     tools:context="com.example.chie.notifitest0429.ChatPage">
 
+    <!-- 入力レイアウト（message_layout）の上部に配置-->
     <ListView
         android:id="@+id/list_chat"
         android:layout_width="match_parent"
@@ -19,6 +23,8 @@
         android:layout_above="@+id/message_layout"
         />
 
+    <!-- 入力部と送信ボタンを子に持つレイアウト -->
+    <!-- 画面下寄せで、子の要素を囲むように配置 -->
     <RelativeLayout
         android:id="@+id/message_layout"
         android:layout_width="match_parent"
@@ -27,6 +33,7 @@
         android:layout_alignParentBottom="true"
         >
 
+        <!-- 入力部　送信ボタンの左に配置・100dpを超えるとスクロール開始 -->
         <EditText
             android:id="@+id/message_edit"
             android:layout_width="match_parent"
@@ -49,6 +56,7 @@
             android:layout_alignParentBottom="false"
             />
 
+        <!-- 送信ボタン　入力レイアウトの右端に配置 -->
         <Button
             android:id="@+id/send_button"
             android:layout_width="60dp"
@@ -67,6 +75,8 @@
 
 
 </RelativeLayout>
+<!-- 追加ここまで -->
+
     <!--
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
