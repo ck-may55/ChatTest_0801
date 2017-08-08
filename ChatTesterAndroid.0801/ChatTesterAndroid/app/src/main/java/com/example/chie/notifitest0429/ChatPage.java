@@ -221,8 +221,30 @@ public class ChatPage extends Fragment {
                             }
                             else if (suid.equals("susmedroot") && msg.child("toUserid").getValue().equals(userId)) {
                                 ChatData chatMsg = new ChatData();
-                                chatMsg.text = (String)(msg.child("text").getValue());
+                                //chatMsg.text =
                                 chatMsg.userID = (String)(msg.child("userID").getValue());
+
+                                //2017/08/08追加
+                                //chatMsg.msgType = (String)(msg.child("msgType").getValue());
+                                Log.d("ChatPage", "msgType " + chatMsg.msgType);
+                                /*msgTypeを持たない以前のデータ*/
+                                if(msg.child("msgType") == null) {
+                                    chatMsg.text = (String)(msg.child("text").getValue());
+                                    Log.d("ChatPage", "text1 : " + chatMsg.text);
+                                }
+                                else if(msg.child("msgType") != null)
+                                {
+                                    chatMsg.msgType = (String)(msg.child("msgType").getValue());
+                                    Log.d("ChatPage", "msgType1 : " + chatMsg.msgType);
+
+                                    if (chatMsg.msgType.equals("image")) {
+                                        chatMsg.imageUrl = (String) (msg.child("imageUrl").getValue());
+                                    } else if (chatMsg.msgType.equals("text")) {
+                                        chatMsg.text = (String) (msg.child("text").getValue());
+                                    }
+
+                                }
+                                //
 
                                 //2017/08/03追加
                                 fromRoot = true;
@@ -289,6 +311,13 @@ public class ChatPage extends Fragment {
         chatData.text = message;
         chatData.toUserid = mToUserId;
         chatData.userID = userId.toLowerCase();
+
+        //2017/08/08追加
+        //ユーザが送信したメッセージのmsgTypeはすべて0(text)
+        chatData.msgType = "text";
+        chatData.imageUrl = null;
+        //
+
         refChat.push().setValue(chatData);
     }
 

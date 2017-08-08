@@ -1,5 +1,7 @@
 package com.example.chie.notifitest0429;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.view.MotionEvent;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
@@ -17,6 +19,10 @@ import android.widget.FrameLayout;
 import android.util.Log;
 
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 
@@ -55,6 +61,11 @@ public class MessageListAdapter extends ArrayAdapter {
         FrameLayout msgLayout;
         ImageView carrot_admin;
         ImageView carrot_user;
+
+        //2017/08/08追加
+        ImageView imgView;
+        //
+
     }
 
     @Override
@@ -77,11 +88,17 @@ public class MessageListAdapter extends ArrayAdapter {
         holder.listItem = (LinearLayout)view.findViewById(R.id.list_item);
         holder.carrot_user = (ImageView)view.findViewById(R.id.carrot_user);
         holder.carrot_admin = (ImageView)view.findViewById(R.id.carrot_admin);
+
+        //2017/08/08追加
+        holder.imgView = (ImageView)view.findViewById(R.id.image_view);
+        //
+
         view.setTag(holder);
 
         // リストビューに表示する要素を取得
         ChatData item = mItems.get(position);
 
+        //担当者からのメッセージの表示
         if (item.userID.equals("susmedroot")) {
             holder.avator.setVisibility(View.VISIBLE);
             holder.avator.setImageResource(R.drawable.avatar_chat_natural);
@@ -92,7 +109,45 @@ public class MessageListAdapter extends ArrayAdapter {
             LayoutParams lp = holder.msgLayout.getLayoutParams();
             MarginLayoutParams mlp = (MarginLayoutParams)lp;
             mlp.setMargins(mlp.leftMargin, 10, mlp.rightMargin, 10);
-        }
+
+            //2017/08/08追加
+            Log.d("Adapter", "msgType: " + item.msgType);
+
+            URL url;
+            InputStream inputStream;
+            if(item.msgType == null){
+                holder.msgView.setVisibility(View.VISIBLE);
+                holder.msgView.setText(item.text);
+                holder.imgView.setVisibility(View.GONE);
+            }
+            else if(item.msgType.equals("text"))
+            {
+                holder.msgView.setVisibility(View.VISIBLE);
+                holder.msgView.setText(item.text);
+                holder.imgView.setVisibility(View.GONE);
+            }
+            else if (item.msgType.equals("image")) {
+                    holder.imgView.setVisibility(View.VISIBLE);
+                    holder.msgView.setVisibility(View.GONE);
+                    try {
+                        url = new URL(item.imageUrl);
+                        inputStream = url.openStream();
+                        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                        holder.imgView.setImageBitmap(bitmap);
+                        inputStream.close();
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+            //
+
+
+
+        //ユーザ送信メッセージの表示
         else {
             holder.listItem.setGravity(Gravity.RIGHT);
             LayoutParams lp = holder.msgLayout.getLayoutParams();
@@ -107,16 +162,20 @@ public class MessageListAdapter extends ArrayAdapter {
             holder.msgLayout.setLayoutParams(mlp);
             holder.carrot_admin.setVisibility(View.GONE);
 
-            //吹き出し位置の指定をする
 
             //ユーザ側の吹き出し表示
             holder.carrot_user.setVisibility(View.VISIBLE);
             holder.carrot_user.setImageResource(R.drawable.carrot_user);
 
             //holder.msgLayout.setVisibility(View.INVISIBLE);
+
+            //2017/08/08追加
+            //メッセージ本文の表示
+            holder.msgView.setText(item.text);
+            //
         }
 
-        holder.msgView.setText(item.text);
+        //holder.msgView.setText(item.text);
 
         final LinearLayout litem = holder.listItem;
 
