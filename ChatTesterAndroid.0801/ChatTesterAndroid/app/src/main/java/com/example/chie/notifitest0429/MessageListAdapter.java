@@ -1,7 +1,9 @@
 package com.example.chie.notifitest0429;
 
+import android.app.Notification;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.view.MotionEvent;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
@@ -21,6 +23,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -33,6 +36,8 @@ import com.example.chie.notifitest0429.ChatData;
  */
 
 public class MessageListAdapter extends ArrayAdapter {
+    private static final String TAG = "MessageListAdapter";
+
     private int mResource;
     private List<ChatData> mItems;
     private LayoutInflater mInflater;
@@ -110,43 +115,58 @@ public class MessageListAdapter extends ArrayAdapter {
             MarginLayoutParams mlp = (MarginLayoutParams)lp;
             mlp.setMargins(mlp.leftMargin, 10, mlp.rightMargin, 10);
 
-            //2017/08/08追加
+            //2017/08/09変更　msgTypeの判定をlong値に
             Log.d("Adapter", "msgType: " + item.msgType);
 
-            URL url;
-            InputStream inputStream;
-            if(item.msgType == null){
+            /*
+            if(item.msgType==null){
                 holder.msgView.setVisibility(View.VISIBLE);
                 holder.msgView.setText(item.text);
                 holder.imgView.setVisibility(View.GONE);
-            }
-            else if(item.msgType.equals("text"))
+            }*/
+            if(ChatPage.MESSAGE_TYPE.TEXT.equals(item.msgType))
             {
                 holder.msgView.setVisibility(View.VISIBLE);
                 holder.msgView.setText(item.text);
                 holder.imgView.setVisibility(View.GONE);
             }
-            else if (item.msgType.equals("image")) {
-                    holder.imgView.setVisibility(View.VISIBLE);
-                    holder.msgView.setVisibility(View.GONE);
+            else if (/*ChatPage.MESSAGE_TYPE.IMAGE.equals(item.msgType)*/item.msgType==1) {
+                holder.imgView.setVisibility(View.VISIBLE);
+                holder.msgView.setVisibility(View.GONE);
+
+                //2017/08/09追加
+                //非同期でダウンロードを行う
+                Uri uri = Uri.parse(item.imageUrl);
+                Uri.Builder builder = uri.buildUpon();
+                AsyncDownload asyncDownload = new AsyncDownload(holder.imgView);
+                asyncDownload.execute(builder);
+
+                //holder.imgView.setImageBitmap(getBitmapFromURL(item.imageUrl));
+                /*
                     try {
+                        Log.d("Aadpter", "url: " + item.imageUrl);
                         url = new URL(item.imageUrl);
+                        // url = new URL("https://firebasestorage.googleapis.com/v0/b/yawnchat-919a4.appspot.com/o/OK9SqgiJd4elD3PP645JKnZVSRo2%2F-KqzMaVDFe1NaoURPr6U%2FLenna.png?alt=media&token=b1f2c4ad-3961-4ac5-a8c0-addb24e6c05b");
+                        Log.d("Adapter", "url: " + url);
                         inputStream = url.openStream();
                         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
                         holder.imgView.setImageBitmap(bitmap);
                         inputStream.close();
                     } catch (MalformedURLException e) {
                         e.printStackTrace();
+                        holder.imgView.setImageResource(R.drawable.ic_yawn);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                    */
 
-                }
             }
-            //
-
-
-
+            else {
+                holder.msgView.setVisibility(View.VISIBLE);
+                holder.msgView.setText(item.text);
+                holder.imgView.setVisibility(View.GONE);
+            }
+        }
         //ユーザ送信メッセージの表示
         else {
             holder.listItem.setGravity(Gravity.RIGHT);
@@ -161,7 +181,6 @@ public class MessageListAdapter extends ArrayAdapter {
             //マージンを設定
             holder.msgLayout.setLayoutParams(mlp);
             holder.carrot_admin.setVisibility(View.GONE);
-
 
             //ユーザ側の吹き出し表示
             holder.carrot_user.setVisibility(View.VISIBLE);

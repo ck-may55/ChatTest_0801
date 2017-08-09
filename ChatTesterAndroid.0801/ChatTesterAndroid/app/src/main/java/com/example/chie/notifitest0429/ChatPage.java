@@ -83,6 +83,8 @@ public class ChatPage extends Fragment {
     // 2017/08/03追加　担当者からのメッセージであるかどうかを保持
     boolean fromRoot = false;
 
+    //2017/08/09追加　メッセージのデータタイプ列挙型
+    public enum MESSAGE_TYPE {TEXT, IMAGE}
     //
     public ChatPage() {
         // Required empty public constructor
@@ -221,28 +223,26 @@ public class ChatPage extends Fragment {
                             }
                             else if (suid.equals("susmedroot") && msg.child("toUserid").getValue().equals(userId)) {
                                 ChatData chatMsg = new ChatData();
-                                //chatMsg.text =
+                                //chatMsg.text = (String) (msg.child("text").getValue());
                                 chatMsg.userID = (String)(msg.child("userID").getValue());
 
-                                //2017/08/08追加
-                                //chatMsg.msgType = (String)(msg.child("msgType").getValue());
-                                Log.d("ChatPage", "msgType " + chatMsg.msgType);
-                                /*msgTypeを持たない以前のデータ*/
-                                if(msg.child("msgType") == null) {
-                                    chatMsg.text = (String)(msg.child("text").getValue());
-                                    Log.d("ChatPage", "text1 : " + chatMsg.text);
+                                //2017/08/09変更
+                                /*msgTypeに子を持つ新しいデータの場合*/
+                                if(msg.hasChild("msgType")) {
+                                    chatMsg.msgType = (long)(msg.child("msgType").getValue());
+                                    //msgTypeがtext(0)のとき
+                                    if(MESSAGE_TYPE.TEXT.equals(chatMsg.msgType) )
+                                        chatMsg.text = (String)(msg.child("text").getValue());
+                                    //msgTypeがtext(1)のとき
+                                    else if(/*MESSAGE_TYPE.IMAGE.equals(chatMsg.msgType)*/chatMsg.msgType==1)
+                                        chatMsg.imageUrl = (String)(msg.child("imageUrl").getValue());
+                                        Log.d("ChatPage", "imageUrl: " + chatMsg.imageUrl);
+
                                 }
-                                else if(msg.child("msgType") != null)
+                                /*以前のデータの場合*/
+                                else
                                 {
-                                    chatMsg.msgType = (String)(msg.child("msgType").getValue());
-                                    Log.d("ChatPage", "msgType1 : " + chatMsg.msgType);
-
-                                    if (chatMsg.msgType.equals("image")) {
-                                        chatMsg.imageUrl = (String) (msg.child("imageUrl").getValue());
-                                    } else if (chatMsg.msgType.equals("text")) {
-                                        chatMsg.text = (String) (msg.child("text").getValue());
-                                    }
-
+                                    chatMsg.text = (String)(msg.child("text").getValue());
                                 }
                                 //
 
@@ -313,8 +313,8 @@ public class ChatPage extends Fragment {
         chatData.userID = userId.toLowerCase();
 
         //2017/08/08追加
-        //ユーザが送信したメッセージのmsgTypeはすべて0(text)
-        chatData.msgType = "text";
+        //ユーザが送信したメッセージのmsgTypeはすべてTEXT(0)
+        chatData.msgType = MESSAGE_TYPE.TEXT.ordinal();
         chatData.imageUrl = null;
         //
 

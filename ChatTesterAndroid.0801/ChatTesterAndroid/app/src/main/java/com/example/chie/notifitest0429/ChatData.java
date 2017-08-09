@@ -14,8 +14,8 @@ public class ChatData {
 
     //2017/08/08追加
     public String imageUrl;
-    //public long msgType; /*0:text, 1:image*/
-    public  String msgType;
+    public long msgType; /*0:text, 1:image*/
+    //public String msgType;
     //
 
     public ChatData() {
@@ -24,7 +24,7 @@ public class ChatData {
     }
 
     public ChatData(String photoUrl, String text, String toUserid, String userId, String imageUrl,
-                    /*long msgType*/ String msgType) {
+                    long msgType/*String msgType*/) {
         this.photoUrl = photoUrl;
         this.text = text;
         this.toUserid = toUserid;
@@ -35,4 +35,6 @@ public class ChatData {
         this.msgType = msgType;
         //
     }
+
+
 }
