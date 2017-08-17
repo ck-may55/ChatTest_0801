@@ -38,14 +38,6 @@ dependencies {
     compile 'com.google.android.gms:play-services-auth:10.0.1'
     compile 'com.google.firebase:firebase-messaging:10.0.1'
     compile 'com.android.support:support-v4:25.3.1'
-
-    //2017/08/17追加
-    //GoogleCloudStrageを使用するのに必要
-    compile 'com.google.firebase:firebase-storage:10.0.1'
-    //ダウンロードした画像をimageViewに表示するために必要
-    compile 'com.firebaseui:firebase-ui-storage:0.6.0'
-    //
-
     testCompile 'junit:junit:4.12'
 }
 apply plugin: 'com.google.gms.google-services'
