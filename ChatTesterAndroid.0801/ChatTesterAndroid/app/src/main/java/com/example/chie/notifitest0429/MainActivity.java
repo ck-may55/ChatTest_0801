@@ -215,7 +215,7 @@ public class MainActivity extends Activity implements SignInPage.OnFragmentInter
     public void onStop() {
         super.onStop();
         if (mAuthListener != null) {
-            mAuth.removeAuthStateListener(mAuthListener);
+            //mAuth.removeAuthStateListener(mAuthListener);
         }
         // LocalBroadcasterのリリース
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);

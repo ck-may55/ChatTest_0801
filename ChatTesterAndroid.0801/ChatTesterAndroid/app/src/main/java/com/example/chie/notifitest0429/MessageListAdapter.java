@@ -1,5 +1,6 @@
 package com.example.chie.notifitest0429;
 
+import android.app.Fragment;
 import android.app.Notification;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -29,7 +30,11 @@ import java.net.URL;
 import java.util.List;
 
 
+import com.bumptech.glide.Glide;
 import com.example.chie.notifitest0429.ChatData;
+import com.firebase.ui.storage.images.FirebaseImageLoader;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 /**
  * Created by satoruishii on 2017/07/25.
@@ -41,6 +46,7 @@ public class MessageListAdapter extends ArrayAdapter {
     private int mResource;
     private List<ChatData> mItems;
     private LayoutInflater mInflater;
+
 
     /**
      * コンストラクタ
@@ -136,10 +142,34 @@ public class MessageListAdapter extends ArrayAdapter {
 
                 //2017/08/09追加
                 //非同期でダウンロードを行う
+/*
                 Uri uri = Uri.parse(item.imageUrl);
                 Uri.Builder builder = uri.buildUpon();
                 AsyncDownload asyncDownload = new AsyncDownload(holder.imgView);
                 asyncDownload.execute(builder);
+*/
+
+                //2017/08/17追加
+                //GoogleCloudStrageから画像をダウンロード＆表示
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                StorageReference imgRef = null;
+                if(item.imageUrl.startsWith("gs://")){
+                    imgRef = storage.getReferenceFromUrl(item.imageUrl);
+                    Log.d(TAG, "imageRef:" + imgRef);
+                    Glide.with(this.getContext())
+                            .using(new FirebaseImageLoader())
+                            .load(imgRef)
+                            .into(holder.imgView);
+                }
+                else if(item.imageUrl.startsWith("http")){
+                    //imageUrlの中身がhttpから始まる場合は非同期処理でダウンロード
+                    Uri uri = Uri.parse(item.imageUrl);
+                    Uri.Builder builder = uri.buildUpon();
+                    AsyncDownload asyncDownload = new AsyncDownload(holder.imgView);
+                    asyncDownload.execute(builder);
+                }
+                //
+
 
                 //holder.imgView.setImageBitmap(getBitmapFromURL(item.imageUrl));
                 /*
