@@ -138,7 +138,8 @@ public class ChatPage extends Fragment {
 
         // 初期化
         initChatView(chatView);
-
+        int itemCount = chatView.getCount();
+        chatView.setSelection(itemCount - 1);
         //
         messageText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -233,7 +234,7 @@ public class ChatPage extends Fragment {
                                     //msgTypeがtext(0)のとき
                                     if(MESSAGE_TYPE.TEXT.equals(chatMsg.msgType) )
                                         chatMsg.text = (String)(msg.child("text").getValue());
-                                    //msgTypeがtext(1)のとき
+                                    //msgTypeがimage(1)のとき
                                     else if(/*MESSAGE_TYPE.IMAGE.equals(chatMsg.msgType)*/chatMsg.msgType==1)
                                         chatMsg.imageUrl = (String)(msg.child("imageUrl").getValue());
                                         Log.d("ChatPage", "imageUrl: " + chatMsg.imageUrl);

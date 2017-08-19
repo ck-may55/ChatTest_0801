@@ -28,6 +28,10 @@ public class AsyncDownload extends AsyncTask<Uri.Builder, Integer, Bitmap> {
 
     private ImageView imageView;
 
+    //
+    private CallBackTask callbacktask;
+    //
+
     public AsyncDownload(ImageView imageView) {
         this.imageView = imageView;
     }
@@ -73,6 +77,26 @@ public class AsyncDownload extends AsyncTask<Uri.Builder, Integer, Bitmap> {
     protected void onPostExecute(Bitmap result) {
 
         this.imageView.setImageBitmap(result);
+
+        //
+        callbacktask.CallBack(result);
+        //
+
     }
+
+    //
+    public void setOnCallBack(CallBackTask _cbj) {
+        callbacktask = _cbj;
+    }
+    //
+    //
+    /**
+     * コールバック用のstaticなclass
+     */
+    public static class CallBackTask {
+        public void CallBack(Bitmap result) {
+        }
+    }
+    //
 
 }

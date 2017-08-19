@@ -18,6 +18,7 @@ public class ChatData {
     //public String msgType;
     //
 
+
     public ChatData() {
         // Default constructor required for calls to DataSnapshot.getValue(User.class)
 

@@ -46,6 +46,11 @@ public class MessageListAdapter extends ArrayAdapter {
     private List<ChatData> mItems;
     private LayoutInflater mInflater;
 
+    //2017/08/19追加
+    private final int DELAY = 5000;
+    private boolean isDownloadSuccess = false;
+    //
+
     /**
      * コンストラクタ
      * @param context コンテキスト
@@ -86,7 +91,9 @@ public class MessageListAdapter extends ArrayAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view;
         ViewHolder holder = null;
-
+        //
+        isDownloadSuccess=false;
+        //
         //Log.d("MessageListAdapter", "getView " + convertView);
 
         view = mInflater.inflate(mResource, null);
@@ -149,6 +156,7 @@ public class MessageListAdapter extends ArrayAdapter {
 
                 //2017/08/17追加
                 //GoogleColudStrageから画像をダウンロード＆表示
+/*
                 FirebaseStorage storage = FirebaseStorage.getInstance();
                 StorageReference imgRef = null;
                 if(item.imageUrl.startsWith("gs://")){
@@ -158,15 +166,28 @@ public class MessageListAdapter extends ArrayAdapter {
                             .using(new FirebaseImageLoader())
                             .load(imgRef).into(holder.imgView);
                 }
+
+
                 else if(item.imageUrl.startsWith("https://")){
-                    //imageUrlの中身がhttpから始まる場合は非同期処理でダウンロード
+                    //imageUrlの中身がhttpから始まる場合
+
+                    //2017/08/19追加
+                    //非同期処理ダウンロードを呼び出す
+                    downloadImageByAsync(item.imageUrl, holder.imgView);
                     Uri uri = Uri.parse(item.imageUrl);
                     Uri.Builder builder = uri.buildUpon();
                     AsyncDownload asyncDownload = new AsyncDownload(holder.imgView);
                     asyncDownload.execute(builder);
-                }
-                //
+                    //
+                    /*
+                    imgRef = storage.getReferenceFromUrl(item.imageUrl);
+                    Log.d(TAG, "imageRef:" + imgRef);
+                    Glide.with(this.getContext())
+                            .using(new FirebaseImageLoader())
+                            .load(imgRef).into(holder.imgView);
+                    */
 
+           //     }
 
                 //holder.imgView.setImageBitmap(getBitmapFromURL(item.imageUrl));
                 /*
@@ -187,12 +208,51 @@ public class MessageListAdapter extends ArrayAdapter {
                     }
                     */
 
+            while (!isDownloadSuccess){
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                StorageReference imgRef = null;
+                if(item.imageUrl.startsWith("gs://")){
+                    imgRef = storage.getReferenceFromUrl(item.imageUrl);
+                    Log.d(TAG, "imageRef:" + imgRef);
+                    Glide.with(this.getContext())
+                            .using(new FirebaseImageLoader())
+                            .load(imgRef).into(holder.imgView);
+                    isDownloadSuccess=true;
+                }
+                else if(item.imageUrl.startsWith("https://")){
+                    Log.d(TAG, "image:" + item.imageUrl);
+                    /*
+                    Uri uri = Uri.parse(item.imageUrl);
+                    Uri.Builder builder = uri.buildUpon();
+                    AsyncDownload asyncDownload = new AsyncDownload(holder.imgView);
+                    asyncDownload.execute(builder);
+                    /*
+                    asyncDownload.setOnCallBack(new AsyncDownload.CallBackTask(){
+                        @Override
+                        public void CallBack(Bitmap result){
+                            super.CallBack(result);
+
+                        }
+                    });
+                    */
+                    downloadImageByAsync(item.imageUrl, holder.imgView);
+                    //DELAYミリ秒待ってから
+                    try {
+                        Thread.sleep(DELAY);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    continue;
+                }
+            }
             }
             else {
                 holder.msgView.setVisibility(View.VISIBLE);
                 holder.msgView.setText(item.text);
                 holder.imgView.setVisibility(View.GONE);
             }
+
         }
         //ユーザ送信メッセージの表示
         else {
@@ -237,5 +297,11 @@ public class MessageListAdapter extends ArrayAdapter {
 
         return view;
     }
-
+    void downloadImageByAsync(String imageUrl, ImageView imageView){
+        //if(imageUrl.startsWith("gs"))
+        Uri uri = Uri.parse(imageUrl);
+        Uri.Builder builder = uri.buildUpon();
+        AsyncDownload asyncDownload = new AsyncDownload(imageView);
+        asyncDownload.execute(builder);
+    }
 }
