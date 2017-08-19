@@ -91,11 +91,11 @@ public class MessageListAdapter extends ArrayAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view;
         ViewHolder holder = null;
-        //
+        //2017/08/19追加
         isDownloadSuccess=false;
         //
-        //Log.d("MessageListAdapter", "getView " + convertView);
 
+        //Log.d("MessageListAdapter", "getView " + convertView);
         view = mInflater.inflate(mResource, null);
         holder = new ViewHolder();
         holder.msgLayout = (FrameLayout) view.findViewById(R.id.message_layout);
@@ -170,24 +170,14 @@ public class MessageListAdapter extends ArrayAdapter {
 
                 else if(item.imageUrl.startsWith("https://")){
                     //imageUrlの中身がhttpから始まる場合
-
-                    //2017/08/19追加
                     //非同期処理ダウンロードを呼び出す
-                    downloadImageByAsync(item.imageUrl, holder.imgView);
                     Uri uri = Uri.parse(item.imageUrl);
                     Uri.Builder builder = uri.buildUpon();
                     AsyncDownload asyncDownload = new AsyncDownload(holder.imgView);
                     asyncDownload.execute(builder);
-                    //
-                    /*
-                    imgRef = storage.getReferenceFromUrl(item.imageUrl);
-                    Log.d(TAG, "imageRef:" + imgRef);
-                    Glide.with(this.getContext())
-                            .using(new FirebaseImageLoader())
-                            .load(imgRef).into(holder.imgView);
-                    */
 
-           //     }
+                }
+*/
 
                 //holder.imgView.setImageBitmap(getBitmapFromURL(item.imageUrl));
                 /*
@@ -206,18 +196,20 @@ public class MessageListAdapter extends ArrayAdapter {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    */
+                */
 
-            while (!isDownloadSuccess){
-                FirebaseStorage storage = FirebaseStorage.getInstance();
-                StorageReference imgRef = null;
-                if(item.imageUrl.startsWith("gs://")){
-                    imgRef = storage.getReferenceFromUrl(item.imageUrl);
-                    Log.d(TAG, "imageRef:" + imgRef);
-                    Glide.with(this.getContext())
-                            .using(new FirebaseImageLoader())
-                            .load(imgRef).into(holder.imgView);
-                    isDownloadSuccess=true;
+                //2017/08/19追加
+                //ダウンロード完了するまで繰り返す
+                while (!isDownloadSuccess){
+                    FirebaseStorage storage = FirebaseStorage.getInstance();
+                    StorageReference imgRef = null;
+                    if(item.imageUrl.startsWith("gs://")){
+                        imgRef = storage.getReferenceFromUrl(item.imageUrl);
+                        Log.d(TAG, "imageRef:" + imgRef);
+                        Glide.with(this.getContext())
+                                .using(new FirebaseImageLoader())
+                                .load(imgRef).into(holder.imgView);
+                        isDownloadSuccess=true;
                 }
                 else if(item.imageUrl.startsWith("https://")){
                     Log.d(TAG, "image:" + item.imageUrl);
@@ -226,24 +218,27 @@ public class MessageListAdapter extends ArrayAdapter {
                     Uri.Builder builder = uri.buildUpon();
                     AsyncDownload asyncDownload = new AsyncDownload(holder.imgView);
                     asyncDownload.execute(builder);
-                    /*
                     asyncDownload.setOnCallBack(new AsyncDownload.CallBackTask(){
                         @Override
                         public void CallBack(Bitmap result){
                             super.CallBack(result);
-
+                            //非同期処理の実行終了を受け取るコールバック
+                            //continue;
                         }
                     });
                     */
+
+                    //
                     downloadImageByAsync(item.imageUrl, holder.imgView);
-                    //DELAYミリ秒待ってから
+                    //DELAYミリ秒待ってから実行
                     try {
                         Thread.sleep(DELAY);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-
                     continue;
+                    //
+
                 }
             }
             }
