@@ -10,6 +10,7 @@ import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Layout;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,6 +36,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import com.example.chie.notifitest0429.MessageListAdapter;
@@ -73,6 +75,10 @@ public class ChatPage extends Fragment {
     private String message;
     private String mPhotoUrl = "https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg";
     private String mToUserId = "susmedroot";
+
+    //2017/08/22追加
+    private long macTime;
+    private boolean firstInit;
 
     //
     private MessageListAdapter adapter = null;
@@ -118,6 +124,9 @@ public class ChatPage extends Fragment {
         this.userId = getArguments().getString("USER_ID").toLowerCase();
         Log.d("ChatPage", "onCreate " + this.userId);
 
+        //
+        firstInit = true;
+        //
 
     }
 
@@ -138,8 +147,18 @@ public class ChatPage extends Fragment {
 
         // 初期化
         initChatView(chatView);
-        int itemCount = chatView.getCount();
-        chatView.setSelection(itemCount - 1);
+        //int itemCount = chatView.getCount();
+        //chatView.setSelection(itemCount - 1);
+        Log.d("ChatPage", "setSelection");
+
+        //2017/08/22追加
+        chatView.post(new Runnable() {
+            @Override
+            public void run() {
+                int itemCount = chatView.getCount();
+                chatView.setSelection(itemCount - 1);
+            }
+        });
         //
         messageText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -161,7 +180,10 @@ public class ChatPage extends Fragment {
             @Override
             public void onClick(View v) {
                 message = messageText.getText().toString();
-                sendToDB(userId,message);
+                //2017/08/22追加
+                macTime = (long) com.example.chie.notifitest0429.DateUtils.getTimeNumberFromDate(new Date());
+                sendToDB(userId,message,macTime);
+                //
                 messageText.getEditableText().clear();
                 initChatView(chatView);
                 chatView.requestFocus();
@@ -212,6 +234,7 @@ public class ChatPage extends Fragment {
                             if (suid == null) {
                                 continue;
                             }
+                            //ユーザから送信したメッセージ
                             if (suid.equals(userId)) {
                                 ChatData chatMsg = new ChatData();
                                 chatMsg.text = (String)(msg.child("text").getValue());
@@ -222,6 +245,7 @@ public class ChatPage extends Fragment {
 
                                 newMessages.add(chatMsg);
                             }
+                            //担当者から受信したメッセージ
                             else if (suid.equals("susmedroot") && msg.child("toUserid").getValue().equals(userId)) {
                                 ChatData chatMsg = new ChatData();
                                 //chatMsg.text = (String) (msg.child("text").getValue());
@@ -232,17 +256,33 @@ public class ChatPage extends Fragment {
                                 if(msg.hasChild("msgType")) {
                                     chatMsg.msgType = (long)(msg.child("msgType").getValue());
                                     //msgTypeがtext(0)のとき
-                                    if(MESSAGE_TYPE.TEXT.equals(chatMsg.msgType) )
+                                    if(/*MESSAGE_TYPE.TEXT.equals(chatMsg.msgType)*/ chatMsg.msgType==0)
                                         chatMsg.text = (String)(msg.child("text").getValue());
+
                                     //msgTypeがimage(1)のとき
-                                    else if(/*MESSAGE_TYPE.IMAGE.equals(chatMsg.msgType)*/chatMsg.msgType==1)
-                                        chatMsg.imageUrl = (String)(msg.child("imageUrl").getValue());
-                                        Log.d("ChatPage", "imageUrl: " + chatMsg.imageUrl);
+//                                    else if(/*MESSAGE_TYPE.IMAGE.equals(chatMsg.msgType)*/chatMsg.msgType==1) {
+//                                        chatMsg.imageUrl = (String) (msg.child("imageUrl").getValue());
+//                                        Log.d("ChatPage", "imageUrl: " + chatMsg.imageUrl);
+//                                    }
+                                    //
+                                    //2017/08/22修正
+                                    //msgTypeが１かつ、画像URLがgs://始まりかをチェック
+                                    else if (/*MESSAGE_TYPE.IMAGE.equals(chatMsg.msgType)*/chatMsg.msgType == 1
+                                            && msg.child("imageUrl").getValue().toString().startsWith("gs://")) {
+                                        chatMsg.imageUrl = (String) (msg.child("imageUrl").getValue());
+                                        //Log.d("ChatPage", "imageUrl: " + chatMsg.imageUrl);
+                                    }
+                                    else {
+                                        Log.d("ChatPage", "Url started with https!!");
+                                        //Log.d("ChatPage", "imageUrl: " + chatMsg.imageUrl);
+                                        return;
+                                    }
+                                    //
+
 
                                 }
                                 /*以前のデータの場合*/
-                                else
-                                {
+                                else {
                                     chatMsg.text = (String)(msg.child("text").getValue());
                                 }
                                 //
@@ -271,11 +311,11 @@ public class ChatPage extends Fragment {
                             if(diff>0){
                             //
                                 for (int i = 0; i < diff; i++) {
-                                    Log.d("ChatPage", "add adapter " + newMessages.get(pos + i));
+                                    //Log.d("ChatPage", "add adapter " + newMessages.get(pos + i));
                                     adapter.add(newMessages.get(pos + i));
                                 }
                                 chatView.setAdapter(adapter);
-                                chatView.setSelection(chatView.getCount() - 1);
+                                //chatView.setSelection(chatView.getCount()-1);
                                 adapter.notifyDataSetChanged();
 
                                 //2017/08/03追加　
@@ -285,6 +325,8 @@ public class ChatPage extends Fragment {
                                     Ringtone ringtone = RingtoneManager.getRingtone(getActivity(), defaultRingtoneUri);
                                     if (ringtone != null) ringtone.play();
                                 }
+                                chatView.setSelection(chatView.getCount()-1);
+                                //chatView.setSelection(chatView.getFirstVisiblePosition());
                                 //
                             }
                         }
@@ -298,12 +340,17 @@ public class ChatPage extends Fragment {
 
                 }
         );
+        if(firstInit) {
+            chatView.setSelection(chatView.getCount());
+            firstInit = false;
+        }
+
     }
 
     /**
      * FirebaseDBのmessages下にメッセージの内容を登録
      */
-    private void sendToDB(String userId, String message){
+    private void sendToDB(String userId, String message, long time){
         database = FirebaseDatabase.getInstance();
 
         final DatabaseReference refChat = database.getReference("messages");
@@ -318,6 +365,10 @@ public class ChatPage extends Fragment {
         chatData.msgType = MESSAGE_TYPE.TEXT.ordinal();
         chatData.imageUrl = null;
         //
+
+        //2017/08/22追加
+        //ユーザが送信した時刻を付与
+        chatData.time = time;
 
         refChat.push().setValue(chatData);
     }

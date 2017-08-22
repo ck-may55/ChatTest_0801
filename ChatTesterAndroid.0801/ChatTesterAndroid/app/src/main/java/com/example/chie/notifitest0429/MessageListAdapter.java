@@ -47,8 +47,8 @@ public class MessageListAdapter extends ArrayAdapter {
     private LayoutInflater mInflater;
 
     //2017/08/19追加
-    private final int DELAY = 5000;
-    private boolean isDownloadSuccess = false;
+    //private final int DELAY = 5000;
+    //private boolean isDownloadSuccess = false;
     //
 
     /**
@@ -92,7 +92,7 @@ public class MessageListAdapter extends ArrayAdapter {
         View view;
         ViewHolder holder = null;
         //2017/08/19追加
-        isDownloadSuccess=false;
+        //isDownloadSuccess=false;
         //
 
         //Log.d("MessageListAdapter", "getView " + convertView);
@@ -127,7 +127,7 @@ public class MessageListAdapter extends ArrayAdapter {
             mlp.setMargins(mlp.leftMargin, 10, mlp.rightMargin, 10);
 
             //2017/08/09変更　msgTypeの判定をlong値に
-            Log.d("Adapter", "msgType: " + item.msgType);
+            //Log.d("Adapter", "msgType: " + item.msgType);
 
             /*
             if(item.msgType==null){
@@ -135,15 +135,43 @@ public class MessageListAdapter extends ArrayAdapter {
                 holder.msgView.setText(item.text);
                 holder.imgView.setVisibility(View.GONE);
             }*/
-            if(ChatPage.MESSAGE_TYPE.TEXT.equals(item.msgType))
-            {
+            if(/*ChatPage.MESSAGE_TYPE.TEXT.equals(item.msgType)*/item.msgType==0)
+            {//テキストメッセージの場合
                 holder.msgView.setVisibility(View.VISIBLE);
                 holder.msgView.setText(item.text);
                 holder.imgView.setVisibility(View.GONE);
             }
-            else if (/*ChatPage.MESSAGE_TYPE.IMAGE.equals(item.msgType)*/item.msgType==1) {
+            else if (/*ChatPage.MESSAGE_TYPE.IMAGE.equals(item.msgType)*/item.msgType==1)
+            {//画像の場合
                 holder.imgView.setVisibility(View.VISIBLE);
                 holder.msgView.setVisibility(View.GONE);
+
+                //2017/08/17追加
+                //GoogleColudStrageから画像をダウンロード＆表示
+                //
+                //2017/08/22修正
+                //従来の方法に変更
+                FirebaseStorage storage = FirebaseStorage.getInstance();
+                StorageReference imgRef;
+                if(item.imageUrl.startsWith("gs://")){
+                    imgRef = storage.getReferenceFromUrl(item.imageUrl);
+                    Log.d(TAG, "imageRef:" + imgRef);
+                    Glide.with(this.getContext())
+                            .using(new FirebaseImageLoader())
+                            .load(imgRef).into(holder.imgView);
+                }
+                else if(item.imageUrl.startsWith("https://")){
+                    //imageUrlの中身がhttpから始まる場合
+                    //非同期処理ダウンロードを呼び出す
+                    /*
+                    Uri uri = Uri.parse(item.imageUrl);
+                    Uri.Builder builder = uri.buildUpon();
+                    AsyncDownload asyncDownload = new AsyncDownload(holder.imgView);
+                    asyncDownload.execute(builder);
+                    */
+                    Log.d(TAG, "imageUrl starts with https:// ");
+                }
+                //
 
                 //2017/08/09追加
                 //非同期でダウンロードを行う
@@ -153,53 +181,9 @@ public class MessageListAdapter extends ArrayAdapter {
                 AsyncDownload asyncDownload = new AsyncDownload(holder.imgView);
                 asyncDownload.execute(builder);
 */
-
-                //2017/08/17追加
-                //GoogleColudStrageから画像をダウンロード＆表示
-/*
-                FirebaseStorage storage = FirebaseStorage.getInstance();
-                StorageReference imgRef = null;
-                if(item.imageUrl.startsWith("gs://")){
-                    imgRef = storage.getReferenceFromUrl(item.imageUrl);
-                    Log.d(TAG, "imageRef:" + imgRef);
-                    Glide.with(this.getContext())
-                            .using(new FirebaseImageLoader())
-                            .load(imgRef).into(holder.imgView);
-                }
-
-
-                else if(item.imageUrl.startsWith("https://")){
-                    //imageUrlの中身がhttpから始まる場合
-                    //非同期処理ダウンロードを呼び出す
-                    Uri uri = Uri.parse(item.imageUrl);
-                    Uri.Builder builder = uri.buildUpon();
-                    AsyncDownload asyncDownload = new AsyncDownload(holder.imgView);
-                    asyncDownload.execute(builder);
-
-                }
-*/
-
-                //holder.imgView.setImageBitmap(getBitmapFromURL(item.imageUrl));
-                /*
-                    try {
-                        Log.d("Aadpter", "url: " + item.imageUrl);
-                        url = new URL(item.imageUrl);
-                        // url = new URL("https://firebasestorage.googleapis.com/v0/b/yawnchat-919a4.appspot.com/o/OK9SqgiJd4elD3PP645JKnZVSRo2%2F-KqzMaVDFe1NaoURPr6U%2FLenna.png?alt=media&token=b1f2c4ad-3961-4ac5-a8c0-addb24e6c05b");
-                        Log.d("Adapter", "url: " + url);
-                        inputStream = url.openStream();
-                        Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                        holder.imgView.setImageBitmap(bitmap);
-                        inputStream.close();
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
-                        holder.imgView.setImageResource(R.drawable.ic_yawn);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                */
-
                 //2017/08/19追加
                 //ダウンロード完了するまで繰り返す
+/*
                 while (!isDownloadSuccess){
                     FirebaseStorage storage = FirebaseStorage.getInstance();
                     StorageReference imgRef = null;
@@ -210,15 +194,15 @@ public class MessageListAdapter extends ArrayAdapter {
                                 .using(new FirebaseImageLoader())
                                 .load(imgRef).into(holder.imgView);
                         isDownloadSuccess=true;
-                }
-                else if(item.imageUrl.startsWith("https://")){
-                    Log.d(TAG, "image:" + item.imageUrl);
-                    /*
-                    Uri uri = Uri.parse(item.imageUrl);
-                    Uri.Builder builder = uri.buildUpon();
-                    AsyncDownload asyncDownload = new AsyncDownload(holder.imgView);
-                    asyncDownload.execute(builder);
-                    asyncDownload.setOnCallBack(new AsyncDownload.CallBackTask(){
+                    }
+                    else if(item.imageUrl.startsWith("https://")){
+                        Log.d(TAG, "image:" + item.imageUrl);
+                        /*
+                        Uri uri = Uri.parse(item.imageUrl);
+                        Uri.Builder builder = uri.buildUpon();
+                        AsyncDownload asyncDownload = new AsyncDownload(holder.imgView);
+                        asyncDownload.execute(builder);
+                        asyncDownload.setOnCallBack(new AsyncDownload.CallBackTask(){
                         @Override
                         public void CallBack(Bitmap result){
                             super.CallBack(result);
@@ -227,7 +211,7 @@ public class MessageListAdapter extends ArrayAdapter {
                         }
                     });
                     */
-
+                    /*
                     //
                     downloadImageByAsync(item.imageUrl, holder.imgView);
                     //DELAYミリ秒待ってから実行
@@ -240,9 +224,11 @@ public class MessageListAdapter extends ArrayAdapter {
                     //
 
                 }
+
             }
+*/
             }
-            else {
+            else {//msgTypeを持たないデータの場合
                 holder.msgView.setVisibility(View.VISIBLE);
                 holder.msgView.setText(item.text);
                 holder.imgView.setVisibility(View.GONE);
@@ -292,6 +278,7 @@ public class MessageListAdapter extends ArrayAdapter {
 
         return view;
     }
+    /*非同期で画像のダウンロードを行う
     void downloadImageByAsync(String imageUrl, ImageView imageView){
         //if(imageUrl.startsWith("gs"))
         Uri uri = Uri.parse(imageUrl);
@@ -299,4 +286,5 @@ public class MessageListAdapter extends ArrayAdapter {
         AsyncDownload asyncDownload = new AsyncDownload(imageView);
         asyncDownload.execute(builder);
     }
+    */
 }

@@ -18,6 +18,9 @@ public class ChatData {
     //public String msgType;
     //
 
+    //2017/08/22追加　ユーザの投稿時間
+    public long time;
+    //
 
     public ChatData() {
         // Default constructor required for calls to DataSnapshot.getValue(User.class)
@@ -25,7 +28,7 @@ public class ChatData {
     }
 
     public ChatData(String photoUrl, String text, String toUserid, String userId, String imageUrl,
-                    long msgType/*String msgType*/) {
+                    long msgType/*String msgType*/, long time) {
         this.photoUrl = photoUrl;
         this.text = text;
         this.toUserid = toUserid;
@@ -34,6 +37,10 @@ public class ChatData {
         //2017/08/08追加
         this.imageUrl = imageUrl;
         this.msgType = msgType;
+        //
+
+        //2017/08/22追加
+        this.time = time;
         //
     }
 

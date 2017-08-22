@@ -20,8 +20,10 @@
         android:focusable="true"
         android:focusableInTouchMode="true"
         android:divider="@null"
-        android:layout_above="@+id/message_layout"
-        />
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_above="@+id/message_layout" />
 
     <!-- 入力部と送信ボタンを子に持つレイアウト -->
     <!-- 画面下寄せで、子の要素を囲むように配置 -->
