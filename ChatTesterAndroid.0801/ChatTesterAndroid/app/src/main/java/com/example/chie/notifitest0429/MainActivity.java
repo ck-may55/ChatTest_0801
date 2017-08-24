@@ -224,6 +224,12 @@ public class MainActivity extends Activity implements SignInPage.OnFragmentInter
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+    }
+
+    @Override
     public void onFragmentInteraction(Uri uri){
 
     }

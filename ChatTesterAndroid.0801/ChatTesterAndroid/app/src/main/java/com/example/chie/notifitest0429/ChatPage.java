@@ -78,7 +78,7 @@ public class ChatPage extends Fragment {
 
     //2017/08/22追加
     private long macTime;
-    private boolean firstInit;
+    //private boolean firstInit;
 
     //
     private MessageListAdapter adapter = null;
@@ -92,6 +92,11 @@ public class ChatPage extends Fragment {
     //2017/08/09追加　メッセージのデータタイプ列挙型
     public enum MESSAGE_TYPE {TEXT, IMAGE}
     //
+
+    //2017/08/24追加　onResume()に渡すためのListViewを保持
+    private ListView chatView2;
+    //
+
     public ChatPage() {
         // Required empty public constructor
     }
@@ -125,7 +130,7 @@ public class ChatPage extends Fragment {
         Log.d("ChatPage", "onCreate " + this.userId);
 
         //
-        firstInit = true;
+        //firstInit = true;
         //
 
     }
@@ -142,6 +147,10 @@ public class ChatPage extends Fragment {
         View view = inflater.inflate(R.layout.fragment_chat_page, container, false);
         final ListView chatView = (ListView)view.findViewById(R.id.list_chat);
 
+        //2017/08/24追加　onResume()に渡すためchatViewの内容を保持
+        chatView2 =chatView;
+        //
+
         sendButton = (Button) view.findViewById(R.id.send_button);
         messageText = (EditText) view.findViewById(R.id.message_edit);
 
@@ -149,17 +158,19 @@ public class ChatPage extends Fragment {
         initChatView(chatView);
         //int itemCount = chatView.getCount();
         //chatView.setSelection(itemCount - 1);
-        Log.d("ChatPage", "setSelection");
+        //Log.d("ChatPage", "setSelection after init");
 
         //2017/08/22追加
         chatView.post(new Runnable() {
             @Override
             public void run() {
                 int itemCount = chatView.getCount();
-                chatView.setSelection(itemCount - 1);
+                //Log.d("ChatPage", "setSelection1");
+                //chatView.setSelection(itemCount - 1);
             }
         });
         //
+
         messageText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -186,7 +197,7 @@ public class ChatPage extends Fragment {
                 //
                 messageText.getEditableText().clear();
                 initChatView(chatView);
-                chatView.requestFocus();
+                //chatView.requestFocus();
             }
         });
 
@@ -279,7 +290,6 @@ public class ChatPage extends Fragment {
                                     }
                                     //
 
-
                                 }
                                 /*以前のデータの場合*/
                                 else {
@@ -299,6 +309,7 @@ public class ChatPage extends Fragment {
                         if (adapter == null) {
                             adapter = new MessageListAdapter(getActivity(), R.layout.list_chat, newMessages);
                             chatView.setAdapter(adapter);
+                            Log.d("ChatPage", "setSelection if adapter is null");
                             chatView.setSelection(chatView.getCount() - 1);
                         }
                         else {
@@ -315,7 +326,11 @@ public class ChatPage extends Fragment {
                                     adapter.add(newMessages.get(pos + i));
                                 }
                                 chatView.setAdapter(adapter);
-                                //chatView.setSelection(chatView.getCount()-1);
+
+                                //アプリがフォアグラウンド中にメッセージが更新
+                                Log.d("ChatPage", "setSelection if diff>0 ");
+                                chatView.setSelection(chatView.getCount()-1);
+
                                 adapter.notifyDataSetChanged();
 
                                 //2017/08/03追加　
@@ -325,7 +340,8 @@ public class ChatPage extends Fragment {
                                     Ringtone ringtone = RingtoneManager.getRingtone(getActivity(), defaultRingtoneUri);
                                     if (ringtone != null) ringtone.play();
                                 }
-                                chatView.setSelection(chatView.getCount()-1);
+                                //Log.d("ChatPage","setSelection onDatachange");
+                                //chatView.setSelection(chatView.getCount()-1);
                                 //chatView.setSelection(chatView.getFirstVisiblePosition());
                                 //
                             }
@@ -338,12 +354,15 @@ public class ChatPage extends Fragment {
                         Log.w("FirebaseManager", "getData:onCancelled", databaseError.toException());
                     }
 
-                }
+                }//
         );
+        /*
         if(firstInit) {
-            chatView.setSelection(chatView.getCount());
+            //Log.d("ChatPage", "setSelection for firstInit");
+              //chatView.setSelection(chatView.getCount()-1);
             firstInit = false;
         }
+        */
 
     }
 
@@ -369,7 +388,7 @@ public class ChatPage extends Fragment {
         //2017/08/22追加
         //ユーザが送信した時刻を付与
         chatData.time = time;
-
+        //
         refChat.push().setValue(chatData);
     }
 
@@ -406,6 +425,15 @@ public class ChatPage extends Fragment {
         mListener = null;
         isend = true;
     }
+
+    //2017/08/24追加　バックグラウンドから復帰時に最下行までスクロールする
+    @Override
+    public void onResume() {
+        super.onResume();
+        chatView2.setSelection(chatView2.getCount()-1);
+
+    }
+    //
 
     private void setBackButton() {
         android.widget.Button left_button = (Button) getActivity().findViewById(R.id.left_back_button);
